@@ -14,16 +14,25 @@ enum WeatherError: Error {
 }
 
 class WeatherService {
-    func currentWeather() async -> CurrentWeather {
-        let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=50.4504&lon=30.5245&appid=789106f8ac934ed236407c792cc9067e")!
+    func currentWeather() async throws -> CurrentWeather {
+        guard let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=50.4504&lon=30.5245&appid=789106f8ac934ed236407c792cc9067e") else {
+            throw WeatherError.invalidURL}
         var request = URLRequest(url: url)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw WeatherError.invalidResponse
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw WeatherError.badStatusCode(httpResponse.statusCode)
+        }
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
             let currentWeather = try JSONDecoder().decode(CurrentWeather.self, from: data)
             return currentWeather
         } catch {
-            fatalError()
+            throw WeatherError.decodingFailed
         }
     }
 }
