@@ -7,12 +7,14 @@
 import SwiftUI
 
 class AddNotesViewModel: ObservableObject {
+    let weatherService = WeatherService()
     let store = NotesStorage()
     
     @Published var noteTitle: String = ""
-    
-    func save() {
-        let newNote = Note(title: noteTitle, createdAt: Date(), temperature:34, icon: nil)
+    @MainActor
+    func save() async {
+        let currentWeather = await weatherService.currentWeather()
+        let newNote = Note(title: noteTitle, createdAt: Date(), temperature: currentWeather.main.feelsLike, icon: currentWeather.weather.first?.icon)
         store.add(newNote)
     }
 }
