@@ -21,4 +21,7 @@ struct Note: Identifiable,Decodable,Hashable,Encodable{
         return formatter.string(from: createdAt)
     }
     
+    var formattedTemperature: String {
+        String(format: "%.1f C", temperature)
+    }
 }
