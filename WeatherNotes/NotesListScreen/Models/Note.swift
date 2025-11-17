@@ -9,6 +9,16 @@ import Foundation
 
 struct Note: Identifiable {
     var id: UUID = UUID()
+    let title: String
+    let createdAt: Date
+    let temperature: Double
+    let icon: String?
     
+    var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy,MMM dd HH:mm"
+        return formatter.string(from: createdAt)
+    }
     
 }
