@@ -22,4 +22,16 @@ class NotesStorage {
         }
         return notes
     }
+    
+    func add(_ note: Note) {
+        var allNotes = allNotes
+        allNotes.append(note)
+        
+        do {
+            let data = try JSONEncoder().encode(allNotes)
+            userDefaults.set(data, forKey: Key.notesKey)
+        } catch {
+            
+        }
+    }
 }
