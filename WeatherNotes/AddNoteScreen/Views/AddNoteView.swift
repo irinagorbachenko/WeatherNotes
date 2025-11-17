@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct AddNoteView: View {
+    @Environment(\.dismiss) var dismiss
     @StateObject var viewModel = AddNotesViewModel()
     
     var body: some View {
@@ -39,7 +40,10 @@ struct AddNoteView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    
+                    Task { @MainActor in
+                        await viewModel.save()
+                        dismiss()
+                    }
                 } label: {
                     
                     Text("Save")

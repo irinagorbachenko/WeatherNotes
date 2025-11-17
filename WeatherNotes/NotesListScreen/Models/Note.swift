@@ -24,4 +24,9 @@ struct Note: Identifiable,Decodable,Hashable,Encodable{
     var formattedTemperature: String {
         String(format: "%.1f C", temperature)
     }
+    
+    var iconURL: URL? {
+        guard let icon else { return nil }
+        return URL(string: "https://openweathermap.org/img/wn/\(icon)@2x.png")
+    }
 }

@@ -6,11 +6,25 @@
 //
 import SwiftUI
 
+enum Route: Hashable {
+    case addNote
+}
 
 class NoteListViewModel: ObservableObject {
-    @Published var notes: [Note] = [
-        Note(id: UUID(),title: "Walking", createdAt: Date(), temperature: 18, icon: nil),
-        Note(id: UUID(),title: "Running", createdAt: Date(), temperature: 24, icon: nil),
-        Note(id: UUID(),title: "Park", createdAt: Date(), temperature: 16, icon: nil)
-    ]
+    private let store: NotesStorage
+    @Published var notes: [Note] = []
+    @Published var navigationPath = NavigationPath()
+    
+    init(store: NotesStorage = NotesStorage()) {
+        self.store = store
+        notes = store.allNotes
+    }
+    
+    func addNote() {
+        navigationPath.append(Route.addNote)
+    }
+    
+    func loadNotes() {
+        notes = store.allNotes
+    }
 }
