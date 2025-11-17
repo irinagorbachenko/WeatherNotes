@@ -15,6 +15,9 @@ struct NotesListView: View {
                 List {
                     ForEach(viewModel.notes) { note in
                         noteView(note)
+                            .onTapGesture {
+                                viewModel.showDetails(for: note)
+                            }
                     }
                 }
             }
@@ -25,6 +28,8 @@ struct NotesListView: View {
                 switch route {
                 case .addNote:
                     AddNoteView()
+                case .details(let note):
+                    DetailsNotesView(note: note)
                 }
             }
             .toolbar {
