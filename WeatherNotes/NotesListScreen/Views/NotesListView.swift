@@ -10,31 +10,27 @@ struct NotesListView: View {
     @StateObject var viewModel = NoteListViewModel()
     
     var body: some View {
-        NavigationStack {
-            List {
-                ForEach(viewModel.notes) { note in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(note.title)
-                                .font(.title3)
-                            Text(note.formattedDate)
-                                .font(.caption)
-                        }
-                        
-                        Spacer()
-                        
-                        VStack {
-                            Text(note.formattedTemperature)
-                                .foregroundStyle(.red)
-                        }
+        NavigationStack(path: $viewModel.navigationPath) {
+            ZStack {
+                List {
+                    ForEach(viewModel.notes) { note in
+                        noteView(note)
                     }
                 }
             }
-            .navigationTitle("Notes")
+            .onAppear {
+                viewModel.loadNotes()
+            }
+            .navigationDestination(for: Route.self) { route in
+                switch route {
+                case .addNote:
+                    AddNoteView()
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        print("Pressed")
+                        viewModel.addNote()
                     } label: {
                         Text("Add")
                     }
@@ -42,8 +38,49 @@ struct NotesListView: View {
             }
         }
     }
+    
+    @ViewBuilder
+    private func noteView(_ note: Note) -> some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text(note.title)
+                    .font(.title3)
+                Text(note.formattedDate)
+                    .font(.caption)
+            }
+            
+            Spacer()
+            
+            VStack {
+                Text(note.formattedTemperature)
+                    .foregroundStyle(.red)
+                if let iconURL = note.iconURL {
+                    AsyncImage(
+                        url: iconURL
+                    ) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20)
+                        case .failure:
+                            Image(systemName: "questionmark.square.dashed")
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
+
 #Preview {
-    NotesListView()
+    NavigationStack {
+        NotesListView()
+    }
 }
