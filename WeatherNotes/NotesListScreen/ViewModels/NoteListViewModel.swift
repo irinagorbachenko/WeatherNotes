@@ -8,6 +8,7 @@ import SwiftUI
 
 enum Route: Hashable {
     case addNote
+    case details(Note)
 }
 
 class NoteListViewModel: ObservableObject {
@@ -26,5 +27,9 @@ class NoteListViewModel: ObservableObject {
     
     func loadNotes() {
         notes = store.allNotes
+    }
+    
+    func showDetails(for note: Note) {
+        navigationPath.append(Route.details(note))
     }
 }
