@@ -6,6 +6,13 @@
 //
 import Foundation
 
+enum WeatherError: Error {
+    case invalidURL
+    case invalidResponse
+    case badStatusCode(Int)
+    case decodingFailed
+}
+
 class WeatherService {
     func currentWeather() async -> CurrentWeather {
         let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=50.4504&lon=30.5245&appid=789106f8ac934ed236407c792cc9067e")!
