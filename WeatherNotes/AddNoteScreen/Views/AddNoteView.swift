@@ -39,17 +39,24 @@ struct AddNoteView: View {
         .navigationTitle("Add Note")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { @MainActor in
-                        await viewModel.save()
-                        dismiss()
+                Button("Save") {
+                    Task {
+                       let success =  await viewModel.save()
+                        if success {
+                            dismiss()
+                        }
                     }
-                } label: {
-                    
-                    Text("Save")
                 }
             }
         }
+        .alert("Error", isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { _ in viewModel.errorMessage = nil }
+            )) {
+                Button("Ok", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
+            }
     }
 }
 
