@@ -12,13 +12,17 @@ struct AddNoteView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            Image("Clouds")
+                .resizable()
+                .scaledToFill()
                 .ignoresSafeArea()
-            
+            Color.black.opacity(0.2)
+                .ignoresSafeArea()
             VStack {
                 TextField("Enter activity", text: $viewModel.noteTitle)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
+                    .frame(maxWidth: 350)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
                             .fill(Color(.secondarySystemBackground))
@@ -37,18 +41,26 @@ struct AddNoteView: View {
             .padding(.top, 24)
         }
         .navigationTitle("Add Note")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { @MainActor in
-                        await viewModel.save()
-                        dismiss()
+                Button("Save") {
+                    Task {
+                        let success = await viewModel.save()
+                        if success {
+                            dismiss()
+                        }
                     }
-                } label: {
-                    
-                    Text("Save")
                 }
             }
+        }
+        .alert("Error", isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { _ in viewModel.errorMessage = nil }
+        )) {
+            Button("Ok", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 }
