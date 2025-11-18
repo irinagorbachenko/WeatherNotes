@@ -38,12 +38,18 @@ struct AddNoteView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") {
+                Button {
                     Task {
                         let success = await viewModel.save()
                         if success {
                             dismiss()
                         }
+                    }
+                } label: {
+                    if viewModel.isLoading {
+                        ProgressView()
+                    } else {
+                        Text("Save")
                     }
                 }
             }
