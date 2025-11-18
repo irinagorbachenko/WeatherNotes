@@ -41,6 +41,7 @@ struct NotesListView: View {
                     }
                 }
             }
+            .navigationTitle("Notes")
         }
     }
 
