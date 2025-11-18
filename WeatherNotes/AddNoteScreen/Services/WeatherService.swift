@@ -14,6 +14,12 @@ enum WeatherError: Error {
 }
 
 class WeatherService {
+    private let session: URLSession
+    
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
+    
     func currentWeather() async throws -> CurrentWeather {
         guard let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=50.4504&lon=30.5245&appid=789106f8ac934ed236407c792cc9067e") else {
             throw WeatherError.invalidURL}
