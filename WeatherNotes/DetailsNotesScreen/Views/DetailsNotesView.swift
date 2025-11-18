@@ -11,17 +11,13 @@ struct DetailsNotesView: View {
     
     var body: some View {
         ZStack {
-            Image("Clouds")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
             Color.black.opacity(0.2)
                 .ignoresSafeArea()
             VStack(spacing: 16) {
                 Text(note.title)
                     .font(.title)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                 
                 Text(note.formattedDate)
                     .font(.subheadline)

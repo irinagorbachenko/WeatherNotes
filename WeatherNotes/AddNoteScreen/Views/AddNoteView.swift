@@ -12,12 +12,6 @@ struct AddNoteView: View {
     
     var body: some View {
         ZStack {
-            Image("Clouds")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            Color.black.opacity(0.2)
-                .ignoresSafeArea()
             VStack {
                 TextField("Enter activity", text: $viewModel.noteTitle)
                     .padding(.horizontal, 16)
