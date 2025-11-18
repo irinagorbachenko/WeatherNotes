@@ -13,43 +13,20 @@ struct AddNoteView: View {
     var body: some View {
         ZStack {
             VStack {
-                TextField("Enter activity", text: $viewModel.noteTitle)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: 350)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color(.secondarySystemBackground))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.blue.opacity(0.5), lineWidth: 1)
-                    )
-                    .font(.system(size: 16, weight: .medium))
-                    .tint(.blue)
-                    .padding(.horizontal)
-                
+                NoteTextField(text: $viewModel.noteTitle)
                 Spacer()
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 24)
+            .padding(.top, AddNoteConstants.topPadding)
         }
         .navigationTitle("Add Note")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
+                SaveButton(isLoading: viewModel.isLoading) {
                     Task {
                         let success = await viewModel.save()
-                        if success {
-                            dismiss()
-                        }
-                    }
-                } label: {
-                    if viewModel.isLoading {
-                        ProgressView()
-                    } else {
-                        Text("Save")
+                        if success { dismiss() }
                     }
                 }
             }
@@ -63,6 +40,52 @@ struct AddNoteView: View {
             Text(viewModel.errorMessage ?? "")
         }
     }
+}
+
+private struct NoteTextField: View {
+    @Binding var text: String
+    
+    var body: some View {
+        TextField("Enter activity", text: $text)
+            .padding(.horizontal, AddNoteConstants.textFieldHorizontalPadding)
+            .padding(.vertical, AddNoteConstants.textFieldVerticalPadding)
+            .frame(maxWidth: AddNoteConstants.textFieldWidth)
+            .background(
+                RoundedRectangle(cornerRadius: AddNoteConstants.textFieldCornerRadius)
+                    .fill(Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AddNoteConstants.textFieldCornerRadius)
+                    .stroke(Color.blue.opacity(0.5), lineWidth: 1)
+            )
+            .font(.system(size: 16, weight: .medium))
+            .tint(.blue)
+            .padding(.horizontal)
+    }
+}
+
+private struct SaveButton: View {
+    var isLoading: Bool
+    var action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            if isLoading {
+                ProgressView()
+            } else {
+                Text("Save")
+            }
+        }
+    }
+}
+
+
+private enum AddNoteConstants {
+    static let textFieldWidth: CGFloat = 350
+    static let textFieldCornerRadius: CGFloat = 14
+    static let textFieldHorizontalPadding: CGFloat = 16
+    static let textFieldVerticalPadding: CGFloat = 12
+    static let topPadding: CGFloat = 24
 }
 
 #Preview {
