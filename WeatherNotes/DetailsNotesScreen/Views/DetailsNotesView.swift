@@ -11,8 +11,6 @@ struct DetailsNotesView: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.2)
-                .ignoresSafeArea()
             VStack(spacing: 16) {
                 Text(note.title)
                     .font(.title)
@@ -21,7 +19,6 @@ struct DetailsNotesView: View {
                 
                 Text(note.formattedDate)
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
                 
                 Text(note.formattedTemperature)
                     .font(.headline)
