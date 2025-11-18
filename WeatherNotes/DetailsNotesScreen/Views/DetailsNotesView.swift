@@ -24,34 +24,7 @@ struct DetailsNotesView: View {
                     .font(.headline)
                     .foregroundColor(.red)
                 
-                if let iconURL = note.iconURL {
-                    AsyncImage(url: iconURL) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 100, height: 100)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 100, height: 100)
-                        case .failure:
-                            Image(systemName: "questionmark.square.dashed")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.gray)
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                } else {
-                    Image(systemName: "questionmark.square.dashed")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                        .foregroundColor(.gray)
-                }
+                NoteIconView(iconURL: note.iconURL)
                 
                 Spacer()
             }
@@ -64,6 +37,49 @@ struct DetailsNotesView: View {
 
 #Preview {
     NavigationStack {
-        DetailsNotesView(note: Note(title: "Sample Note", createdAt: Date(), temperature: 22.5, icon: "10d"))
+        DetailsNotesView(
+            note: Note(title: "Sample Note",
+                       createdAt: Date(),
+                       temperature: 22.5,
+                       icon: "10d")
+        )
+    }
+}
+
+private struct NoteIconView: View {
+    let iconURL: URL?
+    
+    var body: some View {
+        Group {
+            if let url = iconURL {
+                AsyncImage(url: url, content: imagePhaseView)
+            } else {
+                placeholder
+            }
+        }
+        .frame(width: 100, height: 100)
+    }
+    
+    @ViewBuilder
+    private func imagePhaseView(_ phase: AsyncImagePhase) -> some View {
+        switch phase {
+        case .empty:
+            ProgressView()
+        case .success(let image):
+            image
+                .resizable()
+                .scaledToFit()
+        case .failure:
+            placeholder
+        @unknown default:
+            EmptyView()
+        }
+    }
+    
+    private var placeholder: some View {
+        Image(systemName: "questionmark.square.dashed")
+            .resizable()
+            .scaledToFit()
+            .foregroundColor(.gray)
     }
 }
