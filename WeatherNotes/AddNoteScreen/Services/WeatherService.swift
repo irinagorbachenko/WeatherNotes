@@ -6,7 +6,7 @@
 //
 import Foundation
 
-enum WeatherError: Error {
+enum WeatherError: Error, Equatable {
     case invalidURL
     case invalidResponse
     case badStatusCode(Int)
@@ -15,28 +15,42 @@ enum WeatherError: Error {
 
 class WeatherService {
     private let session: URLSession
+    private let apiKey = "789106f8ac934ed236407c792cc9067e"
     
     init(session: URLSession = .shared) {
         self.session = session
     }
     
-    func currentWeather() async throws -> CurrentWeather {
-        guard let url = URL(string: "https://api.openweathermap.org/data/2.5/weather?lat=50.4504&lon=30.5245&appid=789106f8ac934ed236407c792cc9067e") else {
-            throw WeatherError.invalidURL}
-        var request = URLRequest(url: url)
-        let (data, response) = try await URLSession.shared.data(for: request)
+    private func makeURL(forCity city: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "api.openweathermap.org"
+        components.path = "/data/2.5/weather"
+        components.queryItems = [
+            URLQueryItem(name: "q", value: city),
+            URLQueryItem(name: "appid", value: apiKey),
+            URLQueryItem(name: "units", value: "metric")
+        ]
+        return components.url
+    }
+
+    func currentWeather(for city: String) async throws -> CurrentWeather {
+        guard let url = makeURL(forCity: city) else {
+            throw WeatherError.invalidURL
+        }
+        
+        let (data, response) = try await session.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw WeatherError.invalidResponse
         }
-        
+
         guard (200...299).contains(httpResponse.statusCode) else {
             throw WeatherError.badStatusCode(httpResponse.statusCode)
         }
-        
+
         do {
-            let currentWeather = try JSONDecoder().decode(CurrentWeather.self, from: data)
-            return currentWeather
+            return try JSONDecoder().decode(CurrentWeather.self, from: data)
         } catch {
             throw WeatherError.decodingFailed
         }
