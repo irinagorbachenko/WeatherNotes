@@ -40,9 +40,14 @@ main
 
 Feature branches:
 
-feature/add-note
+feature/add-note  
+
 feature/list-screen
+
 feature/weather-service
+
 feature/details-screen
+
 feature/HotFix
+
 feature/Fix
