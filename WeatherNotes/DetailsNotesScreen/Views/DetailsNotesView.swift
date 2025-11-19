@@ -41,8 +41,7 @@ struct DetailsNotesView: View {
             note: Note(title: "Sample Note",
                        createdAt: Date(),
                        temperature: 22.5,
-                       icon: "10d")
-        )
+                       icon: "10d"))
     }
 }
 

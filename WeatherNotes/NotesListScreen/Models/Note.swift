@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Note: Identifiable,Decodable,Hashable,Encodable{
+struct Note: Identifiable,Decodable,Hashable,Encodable {
     var id: UUID = UUID()
     let title: String
     let createdAt: Date
