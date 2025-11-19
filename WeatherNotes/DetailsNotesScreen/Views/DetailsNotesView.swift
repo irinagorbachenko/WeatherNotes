@@ -8,7 +8,7 @@ import SwiftUI
 
 struct DetailsNotesView: View {
     let note: Note
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: 16) {
@@ -16,16 +16,16 @@ struct DetailsNotesView: View {
                     .font(.title)
                     .bold()
                     .foregroundColor(.black)
-                
+
                 Text(note.formattedDate)
                     .font(.subheadline)
-                
+
                 Text(note.formattedTemperature)
                     .font(.headline)
                     .foregroundColor(.red)
-                
+
                 NoteIconView(iconURL: note.iconURL)
-                
+
                 Spacer()
             }
             .padding()
@@ -38,16 +38,19 @@ struct DetailsNotesView: View {
 #Preview {
     NavigationStack {
         DetailsNotesView(
-            note: Note(title: "Sample Note",
-                       createdAt: Date(),
-                       temperature: 22.5,
-                       icon: "10d"))
+            note: Note(
+                title: "Sample Note",
+                createdAt: Date(),
+                temperature: 22.5,
+                icon: "10d"
+            )
+        )
     }
 }
 
 private struct NoteIconView: View {
     let iconURL: URL?
-    
+
     var body: some View {
         Group {
             if let url = iconURL {
@@ -58,13 +61,13 @@ private struct NoteIconView: View {
         }
         .frame(width: 100, height: 100)
     }
-    
+
     @ViewBuilder
     private func imagePhaseView(_ phase: AsyncImagePhase) -> some View {
         switch phase {
         case .empty:
             ProgressView()
-        case .success(let image):
+        case let .success(image):
             image
                 .resizable()
                 .scaledToFit()
@@ -74,7 +77,7 @@ private struct NoteIconView: View {
             EmptyView()
         }
     }
-    
+
     private var placeholder: some View {
         Image(systemName: "questionmark.square.dashed")
             .resizable()
