@@ -7,26 +7,35 @@
 
 import Foundation
 
-class NotesStorage {
-    enum Key {
+import Foundation
+
+protocol NotesStorageProvider {
+    var allNotes: [Note] { get }
+
+    func add(_ node: Note)
+}
+
+final class NotesStorage: NotesStorageProvider {
+    private enum Key {
         static let notesKey = "notesKey"
     }
-    
-    let userDefaults = UserDefaults.standard
-    
+
+    private let userDefaults = UserDefaults.standard
+
     var allNotes: [Note] {
         guard let data = userDefaults.data(forKey: Key.notesKey),
               let notes = try? JSONDecoder().decode([Note].self, from: data)
         else {
-            return[]
+            return []
         }
+
         return notes
     }
-    
+
     func add(_ note: Note) {
         var allNotes = allNotes
         allNotes.append(note)
-        
+
         guard let data = try? JSONEncoder().encode(allNotes) else {
             return
         }
