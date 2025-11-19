@@ -16,7 +16,7 @@ class NotesStorage {
     
     var allNotes: [Note] {
         guard let data = userDefaults.data(forKey: Key.notesKey),
-                let notes = try? JSONDecoder().decode([Note].self, from: data)
+              let notes = try? JSONDecoder().decode([Note].self, from: data)
         else {
             return[]
         }
@@ -27,11 +27,9 @@ class NotesStorage {
         var allNotes = allNotes
         allNotes.append(note)
         
-        do {
-            let data = try JSONEncoder().encode(allNotes)
-            userDefaults.set(data, forKey: Key.notesKey)
-        } catch {
-            
+        guard let data = try? JSONEncoder().encode(allNotes) else {
+            return
         }
+        userDefaults.set(data, forKey: Key.notesKey)
     }
 }
