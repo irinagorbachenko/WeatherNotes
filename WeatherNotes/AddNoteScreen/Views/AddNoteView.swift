@@ -8,50 +8,22 @@ import SwiftUI
 
 struct AddNoteView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject var viewModel = AddNotesViewModel()
+    @StateObject var viewModel: AddNotesViewModel
     
     var body: some View {
         ZStack {
-            Image("Clouds")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            Color.black.opacity(0.2)
-                .ignoresSafeArea()
             VStack {
-                TextField("Enter activity", text: $viewModel.noteTitle)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: 350)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color(.secondarySystemBackground))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.blue.opacity(0.5), lineWidth: 1)
-                    )
-                    .font(.system(size: 16, weight: .medium))
-                    .tint(.blue)
-                    .padding(.horizontal)
-                
+                NoteTextField(text: $viewModel.noteTitle)
                 Spacer()
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 24)
+            .padding(.top, AddNoteConstants.topPadding)
         }
         .navigationTitle("Add Note")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") {
-                    Task {
-                        let success = await viewModel.save()
-                        if success {
-                            dismiss()
-                        }
-                    }
-                }
+                SaveButton(isLoading: viewModel.isLoading) { saveNote() }
             }
         }
         .alert("Error", isPresented: Binding(
@@ -59,14 +31,70 @@ struct AddNoteView: View {
             set: { _ in viewModel.errorMessage = nil }
         )) {
             Button("Ok", role: .cancel) { }
+            Button("Retry", role: .cancel) { saveNote() }
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
     }
+    
+    private func saveNote() {
+        Task {
+            try await viewModel.save()
+            dismiss()
+        }
+    }
+}
+
+private struct NoteTextField: View {
+    @Binding var text: String
+    
+    var body: some View {
+        TextField("Enter activity", text: $text)
+            .padding(.horizontal, AddNoteConstants.textFieldHorizontalPadding)
+            .padding(.vertical, AddNoteConstants.textFieldVerticalPadding)
+            .frame(maxWidth: AddNoteConstants.textFieldWidth)
+            .background(
+                RoundedRectangle(cornerRadius: AddNoteConstants.textFieldCornerRadius)
+                    .fill(Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AddNoteConstants.textFieldCornerRadius)
+                    .stroke(Color.blue.opacity(0.5), lineWidth: 1)
+            )
+            .font(.system(size: 16, weight: .medium))
+            .tint(.blue)
+            .padding(.horizontal)
+    }
+}
+
+private struct SaveButton: View {
+    var isLoading: Bool
+    var action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            if isLoading {
+                ProgressView()
+            } else {
+                Text("Save")
+            }
+        }
+    }
+}
+
+
+private enum AddNoteConstants {
+    static let textFieldWidth: CGFloat = 350
+    static let textFieldCornerRadius: CGFloat = 14
+    static let textFieldHorizontalPadding: CGFloat = 16
+    static let textFieldVerticalPadding: CGFloat = 12
+    static let topPadding: CGFloat = 24
 }
 
 #Preview {
     NavigationStack {
-        AddNoteView()
+        AddNoteView(
+            viewModel: AddNotesViewModel(store: NotesStorage())
+        )
     }
 }

@@ -12,46 +12,39 @@ struct NotesListView: View {
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             ZStack {
-                Image("Clouds")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
                 List {
                     ForEach(viewModel.notes) { note in
                         noteView(note)
                             .onTapGesture {
                                 viewModel.showDetails(for: note)
                             }
-                            .listRowBackground(
-                                Rectangle()
-                                    .fill(.ultraThinMaterial)
-                            )
                     }
-                    Color.clear
-                        .frame(height: 300)
-                        .listRowBackground(Color.clear)
-                }
-                .scrollContentBackground(.hidden)
-                .listStyle(.plain)
-                .frame(maxWidth: 350)
-            }
-            .navigationTitle("Notes")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Add") { viewModel.addNote() }
-                }
-            }
-            .navigationDestination(for: Route.self) { route in
-                switch route {
-                case .addNote:
-                    AddNoteView()
-                case .details(let note):
-                    DetailsNotesView(note: note)
                 }
             }
             .onAppear {
                 viewModel.loadNotes()
             }
+            .navigationDestination(for: Route.self) { route in
+                switch route {
+                case .addNote:
+                    AddNoteView(
+                        viewModel: AddNotesViewModel(store: viewModel.store)
+                    )
+                    
+                case .details(let note):
+                    DetailsNotesView(note: note)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.addNote()
+                    } label: {
+                        Text("Add")
+                    }
+                }
+            }
+            .navigationTitle("Notes")
         }
     }
     
@@ -70,11 +63,13 @@ struct NotesListView: View {
             VStack {
                 Text(note.formattedTemperature)
                     .foregroundStyle(.red)
-                
                 if let iconURL = note.iconURL {
-                    AsyncImage(url: iconURL) { phase in
+                    AsyncImage(
+                        url: iconURL
+                    ) { phase in
                         switch phase {
-                        case .empty: ProgressView()
+                        case .empty:
+                            ProgressView()
                         case .success(let image):
                             image
                                 .resizable()
@@ -82,18 +77,12 @@ struct NotesListView: View {
                                 .frame(width: 20)
                         case .failure:
                             Image(systemName: "questionmark.square.dashed")
-                        @unknown default: EmptyView()
+                        @unknown default:
+                            EmptyView()
                         }
                     }
                 }
             }
         }
-        .padding(.vertical, 4)
-    }
-}
-
-#Preview {
-    NavigationStack {
-        NotesListView()
     }
 }
