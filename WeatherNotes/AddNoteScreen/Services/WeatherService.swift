@@ -14,10 +14,10 @@ enum WeatherError: Error, Equatable {
 }
 
 class WeatherService {
-    private let session: URLSession
+    private let session: URLSessionProtocol
     private let apiKey = "789106f8ac934ed236407c792cc9067e"
     
-    init(session: URLSession = .shared) {
+    init(session: URLSessionProtocol = URLSession.shared) {
         self.session = session
     }
     
@@ -33,7 +33,7 @@ class WeatherService {
         ]
         return components.url
     }
-
+    
     func currentWeather(for city: String) async throws -> CurrentWeather {
         guard let url = makeURL(forCity: city) else {
             throw WeatherError.invalidURL
@@ -44,11 +44,11 @@ class WeatherService {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw WeatherError.invalidResponse
         }
-
+        
         guard (200...299).contains(httpResponse.statusCode) else {
             throw WeatherError.badStatusCode(httpResponse.statusCode)
         }
-
+        
         do {
             return try JSONDecoder().decode(CurrentWeather.self, from: data)
         } catch {
