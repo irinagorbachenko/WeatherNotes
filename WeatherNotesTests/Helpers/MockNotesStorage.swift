@@ -6,14 +6,14 @@
 
 @testable import WeatherNotes
 
-class MockNotesStorage: NotesStorage {
+class MockNotesStorage: NotesStorageProvider {
     var addedNotes: [Note] = []
-    
-    override func add(_ note: Note) {
+
+    func add(_ note: Note) {
         addedNotes.append(note)
     }
-    
-    override var allNotes: [Note] {
+
+    var allNotes: [Note] {
         addedNotes
     }
 }

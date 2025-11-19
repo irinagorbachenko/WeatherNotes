@@ -13,14 +13,18 @@ enum WeatherError: Error, Equatable {
     case decodingFailed
 }
 
-class WeatherService {
+protocol WeatherProvider {
+    func currentWeather(for city: String) async throws -> CurrentWeather
+}
+
+class WeatherService: WeatherProvider {
     private let session: URLSessionProtocol
     private let apiKey = "789106f8ac934ed236407c792cc9067e"
-    
+
     init(session: URLSessionProtocol = URLSession.shared) {
         self.session = session
     }
-    
+
     private func makeURL(forCity city: String) -> URL? {
         var components = URLComponents()
         components.scheme = "https"
@@ -29,26 +33,26 @@ class WeatherService {
         components.queryItems = [
             URLQueryItem(name: "q", value: city),
             URLQueryItem(name: "appid", value: apiKey),
-            URLQueryItem(name: "units", value: "metric")
+            URLQueryItem(name: "units", value: "metric"),
         ]
         return components.url
     }
-    
+
     func currentWeather(for city: String) async throws -> CurrentWeather {
         guard let url = makeURL(forCity: city) else {
             throw WeatherError.invalidURL
         }
-        
+
         let (data, response) = try await session.data(from: url)
-        
+
         guard let httpResponse = response as? HTTPURLResponse else {
             throw WeatherError.invalidResponse
         }
-        
-        guard (200...299).contains(httpResponse.statusCode) else {
+
+        guard (200 ... 299).contains(httpResponse.statusCode) else {
             throw WeatherError.badStatusCode(httpResponse.statusCode)
         }
-        
+
         do {
             return try JSONDecoder().decode(CurrentWeather.self, from: data)
         } catch {

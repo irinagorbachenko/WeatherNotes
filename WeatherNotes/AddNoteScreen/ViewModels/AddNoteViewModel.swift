@@ -10,26 +10,35 @@ class AddNotesViewModel: ObservableObject {
     @Published var noteTitle: String = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
-    
-    private let weatherService: WeatherService
-    private let store: NotesStorage
-    
-    init(weatherService: WeatherService = WeatherService(),
-         store: NotesStorage = NotesStorage()) {
+
+    private let weatherService: WeatherProvider
+    private let store: NotesStorageProvider
+
+    init(
+        weatherService: WeatherProvider = WeatherService(),
+        store: NotesStorageProvider = NotesStorage()
+    ) {
         self.weatherService = weatherService
         self.store = store
     }
-    
+
     @MainActor
     func save() async throws {
+        isLoading = true
+        defer { isLoading = false }
+
         do {
-            isLoading = true
-            defer { isLoading = false }
             let currentWeather = try await weatherService.currentWeather(for: "Kyiv")
-            store.add(Note(title: noteTitle, createdAt: Date(), temperature: currentWeather.main.feelsLike, icon: currentWeather.weather.first?.icon))
-            isLoading = false
+            store.add(
+                Note(
+                    title: noteTitle,
+                    createdAt: Date(),
+                    temperature: currentWeather.main.feelsLike,
+                    icon: currentWeather.weather.first?.icon
+                )
+            )
         } catch {
-            self.errorMessage = error.localizedDescription
+            errorMessage = error.localizedDescription
             throw error
         }
     }

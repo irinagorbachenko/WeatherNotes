@@ -4,18 +4,17 @@
 //
 //  Created by Irina Gorbachenko on 19.11.2025.
 //
+import Combine
 import SwiftUI
-
-import XCTest
 @testable import WeatherNotes
+import XCTest
 
 final class AddNotesViewModelTests: XCTestCase {
-    
-    var sut: AddNotesViewModel!
-    var mockWeather: MockWeatherService!
-    var mockStore: MockNotesStorage!
-    
-    static let fakeWeather = CurrentWeather(
+    private var sut: AddNotesViewModel!
+    private var mockWeather: MockWeatherService!
+    private var mockStore: MockNotesStorage!
+    private var cancellables = Set<AnyCancellable>()
+    private let fakeWeather = CurrentWeather(
         name: "Kyiv",
         main: .init(
             temp: 20,
@@ -25,66 +24,65 @@ final class AddNotesViewModelTests: XCTestCase {
             humidity: 60
         ),
         weather: [
-            .init(id: 1, main: "Clear", description: "sunny", icon: "01d")
+            .init(id: 1, main: "Clear", description: "sunny", icon: "01d"),
         ]
     )
-    
+
     override func setUp() {
         super.setUp()
         mockWeather = MockWeatherService()
         mockStore = MockNotesStorage()
         sut = AddNotesViewModel(weatherService: mockWeather, store: mockStore)
     }
-    
+
     override func tearDown() {
         sut = nil
         mockWeather = nil
         mockStore = nil
         super.tearDown()
     }
-    
+
     func testSaveSuccess() async throws {
-        mockWeather.result = .success(Self.fakeWeather)
-        
+        // Given
+        mockWeather.result = .success(fakeWeather)
         sut.noteTitle = "Test Note"
-        
+
         try await sut.save()
-        
         XCTAssertEqual(mockStore.addedNotes.count, 1)
         XCTAssertEqual(mockStore.addedNotes.first?.temperature, 21.5)
     }
-    
+
     func testSaveFailure() async {
         mockWeather.result = .failure(WeatherError.invalidResponse)
-        
         sut.noteTitle = "Fail"
-        
+
         do {
-            _ = try await sut.save()
+            try await sut.save()
             XCTFail("Expected error")
         } catch {
             XCTAssertEqual(sut.errorMessage, WeatherError.invalidResponse.localizedDescription)
             XCTAssertTrue(mockStore.addedNotes.isEmpty)
         }
     }
-    
-    func testLoadingState() async {
-        mockWeather.result = .success(Self.fakeWeather)
-        
+
+    func testLoadingState() {
+        mockWeather.result = .success(fakeWeather)
         XCTAssertFalse(sut.isLoading)
-        
-        let task = Task { @MainActor in
-            try? await sut.save()
+
+        let exp = expectation(description: "Wait until toggle")
+        exp.expectedFulfillmentCount = 3
+        var isLoadingResults = [Bool]()
+        sut.$isLoading.sink { isLoading in
+            isLoadingResults.append(isLoading)
+            exp.fulfill()
+        }.store(in: &cancellables)
+
+        Task {
+            try await sut.save()
         }
-        
-        await MainActor.run {
-            XCTAssertTrue(sut.isLoading)
-        }
-        
-        await task.value
-        
-        await MainActor.run {
-            XCTAssertFalse(sut.isLoading)
-        }
+        wait(for: [exp], timeout: 1.0)
+
+        // Then
+        XCTAssertEqual(isLoadingResults, [false, true, false])
     }
 }

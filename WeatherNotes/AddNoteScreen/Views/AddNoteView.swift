@@ -9,7 +9,7 @@ import SwiftUI
 struct AddNoteView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var viewModel: AddNotesViewModel
-    
+
     var body: some View {
         ZStack {
             VStack {
@@ -30,13 +30,13 @@ struct AddNoteView: View {
             get: { viewModel.errorMessage != nil },
             set: { _ in viewModel.errorMessage = nil }
         )) {
-            Button("Ok", role: .cancel) { }
+            Button("Ok", role: .cancel) {}
             Button("Retry", role: .cancel) { saveNote() }
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
     }
-    
+
     private func saveNote() {
         Task {
             try await viewModel.save()
@@ -47,7 +47,7 @@ struct AddNoteView: View {
 
 private struct NoteTextField: View {
     @Binding var text: String
-    
+
     var body: some View {
         TextField("Enter activity", text: $text)
             .padding(.horizontal, AddNoteConstants.textFieldHorizontalPadding)
@@ -70,7 +70,7 @@ private struct NoteTextField: View {
 private struct SaveButton: View {
     var isLoading: Bool
     var action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             if isLoading {
@@ -81,7 +81,6 @@ private struct SaveButton: View {
         }
     }
 }
-
 
 private enum AddNoteConstants {
     static let textFieldWidth: CGFloat = 350
