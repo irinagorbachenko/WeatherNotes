@@ -47,7 +47,6 @@ final class AddNotesViewModelTests: XCTestCase {
         mockWeather.result = .success(Self.fakeWeather)
         
         sut.noteTitle = "Test Note"
-        sut.city = "Kyiv"
         
         try await sut.save()
         
@@ -59,7 +58,6 @@ final class AddNotesViewModelTests: XCTestCase {
         mockWeather.result = .failure(WeatherError.invalidResponse)
         
         sut.noteTitle = "Fail"
-        sut.city = "Kyiv"
         
         do {
             _ = try await sut.save()
@@ -75,7 +73,7 @@ final class AddNotesViewModelTests: XCTestCase {
         
         XCTAssertFalse(sut.isLoading)
         
-        let task = Task {
+        let task = Task { @MainActor in
             try? await sut.save()
         }
         
