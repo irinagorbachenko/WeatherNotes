@@ -6,18 +6,18 @@
 //
 import Foundation
 
-struct CurrentWeather: Decodable {
+struct CurrentWeather: Codable {
     let name: String
     let main: Main
     let weather: [Weather]
-    
-    struct Main: Decodable {
+
+    struct Main: Codable {
         let temp: Double
         let feelsLike: Double
         let tempMin: Double
         let tempMax: Double
         let humidity: Int
-        
+
         enum CodingKeys: String, CodingKey {
             case temp
             case feelsLike = "feels_like"
@@ -26,11 +26,11 @@ struct CurrentWeather: Decodable {
             case humidity
         }
     }
-    
-    struct Weather: Decodable {
+
+    struct Weather: Codable {
         let id: Int
-        let main: String       // e.g. "Rain", "Clouds"
+        let main: String
         let description: String
-        let icon: String       // e.g. "10d"
+        let icon: String
     }
 }
