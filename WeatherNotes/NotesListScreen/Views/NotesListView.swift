@@ -8,7 +8,7 @@ import SwiftUI
 
 struct NotesListView: View {
     @StateObject var viewModel = NoteListViewModel()
-    
+
     var body: some View {
         NavigationStack(path: $viewModel.navigationPath) {
             ZStack {
@@ -30,8 +30,8 @@ struct NotesListView: View {
                     AddNoteView(
                         viewModel: AddNotesViewModel(store: viewModel.store)
                     )
-                    
-                case .details(let note):
+
+                case let .details(note):
                     DetailsNotesView(note: note)
                 }
             }
@@ -47,7 +47,7 @@ struct NotesListView: View {
             .navigationTitle("Notes")
         }
     }
-    
+
     @ViewBuilder
     private func noteView(_ note: Note) -> some View {
         HStack {
@@ -57,32 +57,33 @@ struct NotesListView: View {
                 Text(note.formattedDate)
                     .font(.caption)
             }
-            
+
             Spacer()
-            
+
             VStack {
                 Text(note.formattedTemperature)
                     .foregroundStyle(.red)
                 if let iconURL = note.iconURL {
-                    AsyncImage(
-                        url: iconURL
-                    ) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 20)
-                        case .failure:
-                            Image(systemName: "questionmark.square.dashed")
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
+                    AsyncImage(url: iconURL) { phase in imagePhaseView(phase) }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func imagePhaseView(_ phase: AsyncImagePhase) -> some View {
+        switch phase {
+        case .empty:
+            ProgressView()
+        case let .success(image):
+            image
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20)
+        case .failure:
+            Image(systemName: "questionmark.square.dashed")
+        @unknown default:
+            EmptyView()
         }
     }
 }
