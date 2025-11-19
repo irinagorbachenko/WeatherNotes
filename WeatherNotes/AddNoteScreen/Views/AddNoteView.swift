@@ -23,12 +23,7 @@ struct AddNoteView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                SaveButton(isLoading: viewModel.isLoading) {
-                    Task {
-                        let success = await viewModel.save()
-                        if success { dismiss() }
-                    }
-                }
+                SaveButton(isLoading: viewModel.isLoading) { saveNote() }
             }
         }
         .alert("Error", isPresented: Binding(
@@ -36,8 +31,16 @@ struct AddNoteView: View {
             set: { _ in viewModel.errorMessage = nil }
         )) {
             Button("Ok", role: .cancel) { }
+            Button("Retry", role: .cancel) { saveNote() }
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+    }
+    
+    private func saveNote() {
+        Task {
+            try await viewModel.save()
+            dismiss()
         }
     }
 }
