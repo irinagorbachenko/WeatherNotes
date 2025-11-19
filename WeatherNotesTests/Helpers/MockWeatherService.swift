@@ -6,14 +6,14 @@
 //
 @testable import WeatherNotes
 
-class MockWeatherService: WeatherService {
+class MockWeatherService: WeatherProvider {
     var result: Result<CurrentWeather, Error>?
-    
-    override func currentWeather(for city: String) async throws -> CurrentWeather {
+
+    func currentWeather(for _: String) async throws -> CurrentWeather {
         switch result {
-        case .success(let weather):
+        case let .success(weather):
             return weather
-        case .failure(let error):
+        case let .failure(error):
             throw error
         case .none:
             fatalError("Result was not set")
