@@ -12,7 +12,7 @@ enum Route: Hashable {
 }
 
 class NoteListViewModel: ObservableObject {
-    private let store: NotesStorage
+    let store: NotesStorage
     @Published var notes: [Note] = []
     @Published var navigationPath = NavigationPath()
     
@@ -31,5 +31,11 @@ class NoteListViewModel: ObservableObject {
     
     func showDetails(for note: Note) {
         navigationPath.append(Route.details(note))
+    }
+}
+
+#Preview {
+    NavigationStack {
+        NotesListView()
     }
 }

@@ -27,7 +27,10 @@ struct NotesListView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .addNote:
-                    AddNoteView()
+                    AddNoteView(
+                        viewModel: AddNotesViewModel(store: viewModel.store)
+                    )
+                    
                 case .details(let note):
                     DetailsNotesView(note: note)
                 }
@@ -44,7 +47,7 @@ struct NotesListView: View {
             .navigationTitle("Notes")
         }
     }
-
+    
     @ViewBuilder
     private func noteView(_ note: Note) -> some View {
         HStack {
@@ -81,12 +84,5 @@ struct NotesListView: View {
                 }
             }
         }
-    }
-}
-
-
-#Preview {
-    NavigationStack {
-        NotesListView()
     }
 }

@@ -8,7 +8,7 @@ import SwiftUI
 
 struct AddNoteView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject var viewModel = AddNotesViewModel()
+    @StateObject var viewModel: AddNotesViewModel
     
     var body: some View {
         ZStack {
@@ -90,6 +90,8 @@ private enum AddNoteConstants {
 
 #Preview {
     NavigationStack {
-        AddNoteView()
+        AddNoteView(
+            viewModel: AddNotesViewModel(store: NotesStorage())
+        )
     }
 }

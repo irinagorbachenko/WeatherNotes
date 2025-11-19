@@ -8,7 +8,11 @@ import SwiftUI
 
 class AddNotesViewModel: ObservableObject {
     let weatherService = WeatherService()
-    let store = NotesStorage()
+    var store = NotesStorage()
+    
+    init(store: NotesStorage) {
+            self.store = store
+        }
     
     @Published var noteTitle: String = ""
     @Published var isLoading = false
