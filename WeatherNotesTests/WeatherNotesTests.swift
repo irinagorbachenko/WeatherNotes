@@ -11,67 +11,94 @@ import XCTest
 
 final class WeatherServiceTests: XCTestCase {
     
-    var sut: WeatherService!
-    
-    override func setUp() {
-        super.setUp()
-        
-        let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [MockURLProtocol.self]
-        
-        let session = URLSession(configuration: config)
-        sut = WeatherService(session: session)
-    }
-    
     func testSuccessResponse() async throws {
-        let json = """
-        {
-            "name": "Kyiv",
-            "main": {
-                "temp": 20,
-                "feels_like": 18,
-                "temp_min": 10,
-                "temp_max": 30,
-                "humidity": 70
-            },
-            "weather": [{
-                "id": 800,
-                "main": "Clear",
-                "description": "Sunny",
-                "icon": "01d"
-            }]
-        }
-        """
-        MockURLProtocol.stubResponseData = json.data(using: .utf8)
-        MockURLProtocol.statusCode = 200
+        let mockSession = MockURLSession()
         
-        let result = try await sut.currentWeather(for: "Kyiv")
+        let weatherJSON = """
+        {
+          "name": "Kyiv",
+          "main": { 
+            "temp": 10,
+            "feels_like": 8,
+            "temp_min": 8,
+            "temp_max": 12,
+            "humidity": 70
+          },
+          "weather": [
+            { 
+              "id": 1,
+              "main": "Clear",
+              "description": "clear sky",
+              "icon": "01d"
+            }
+          ]
+        }
+
+        """.data(using: .utf8)!
+        
+        let response = HTTPURLResponse(
+            url: URL(string: "https://test.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+        
+        mockSession.dataToReturn = weatherJSON
+        mockSession.responseToReturn = response
+        
+        let service = WeatherService(session: mockSession)
+        
+        let result = try await service.currentWeather(for: "Kyiv")
         
         XCTAssertEqual(result.name, "Kyiv")
-        XCTAssertEqual(result.main.feelsLike, 18)
+        XCTAssertEqual(result.main.feelsLike, 8)
+        XCTAssertEqual(result.weather.first?.icon, "01d")
     }
     
     func testBadStatusCode() async {
-        MockURLProtocol.stubResponseData = Data()
-        MockURLProtocol.statusCode = 404
+        // GIVEN
+        let mockSession = MockURLSession()
+        
+        mockSession.dataToReturn = Data()
+        mockSession.responseToReturn = HTTPURLResponse(
+            url: URL(string: "https://test.com")!,
+            statusCode: 404,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+        
+        let service = WeatherService(session: mockSession)
         
         do {
-            _ = try await sut.currentWeather(for: "Test")
-            XCTFail("Expected badStatusCode")
+            _ = try await service.currentWeather(for: "Kyiv")
+            XCTFail("Should throw badStatusCode")
         } catch let error as WeatherError {
-            XCTAssertEqual(error, .badStatusCode(404))
+            if case .badStatusCode(let code) = error {
+                XCTAssertEqual(code, 404)
+            } else {
+                XCTFail("Wrong error thrown: \(error)")
+            }
         } catch {
-            XCTFail("Unexpected error")
+            XCTFail("Wrong error type")
         }
     }
     
-    func testDecodingFailure() async {
-        MockURLProtocol.stubResponseData = "{}".data(using: .utf8)
-        MockURLProtocol.statusCode = 200
+    func testDecodingFailed() async {
+        let mockSession = MockURLSession()
+        
+        mockSession.dataToReturn = "{ invalid json }".data(using: .utf8)
+        mockSession.responseToReturn = HTTPURLResponse(
+            url: URL(string: "https://test.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+        
+        let service = WeatherService(session: mockSession)
         
         do {
-            _ = try await sut.currentWeather(for: "Kyiv")
-            XCTFail("Expected decodingFailed")
+            _ = try await service.currentWeather(for: "Kyiv")
+            XCTFail("Should throw decodingFailed")
         } catch let error as WeatherError {
             XCTAssertEqual(error, .decodingFailed)
         } catch {
